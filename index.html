@@ -7,7 +7,7 @@
     .station { margin-bottom: 25px; padding: 10px; background: #222; border-radius: 8px; }
     .station h2 { color: #0f0; margin-bottom: 5px; }
   </style>
-  <link rel="icon" href="data:,"> <!-- Avoid favicon error -->
+  <link rel="icon" href="data:,"> <!-- Prevent favicon error -->
 </head>
 <body>
   <h1>Now Playing</h1>
@@ -27,39 +27,41 @@
     }
 
     async function updateWRBB() {
-    try {
-      const html = await fetchWithProxy("https://spinitron.com/WRBB/");
-      const match = html.match(/<tr class="spin">.*?<td class="artist">(.*?)<\/td>.*?<td class="song">(.*?)<\/td>/s);
-      const text = match ? `${match[1]} – ${match[2]}` : 'Not found';
-      document.querySelector('#wrbb .info').innerText = text;
-    } catch (e) {
-      document.querySelector('#wrbb .info').innerText = 'Failed to load.';
+      try {
+        const html = await fetchWithProxy("https://spinitron.com/WRBB/");
+        const match = html.match(/<span class="artist">(.*?)<\/span>\\s*<span class="song">(.*?)<\/span>/);
+        const text = match ? `${match[1]} – ${match[2]}` : 'Not found';
+        document.querySelector('#wrbb .info').innerText = text;
+      } catch {
+        document.querySelector('#wrbb .info').innerText = 'Failed to load.';
+      }
     }
-  }
 
     async function updateWJIB() {
-    try {
-      const html = await fetchWithProxy("https://onlineradiobox.com/us/jib/playlist/");
-      const match = html.match(/<div class="track__title">(.*?)<\/div>/);
-      const text = match ? match[1].replace(/<.*?>/g, '') : 'Not found';
-      document.querySelector('#wjib .info').innerText = text;
-    } catch (e) {
-      document.querySelector('#wjib .info').innerText = 'Failed to load.';
+      try {
+        const html = await fetchWithProxy("https://onlineradiobox.com/us/jib/playlist/");
+        const match = html.match(/<td class="track_history_item">([^<]+)/);
+        const text = match ? match[1].trim() : 'Not found';
+        document.querySelector('#wjib .info').innerText = text;
+      } catch {
+        document.querySelector('#wjib .info').innerText = 'Failed to load.';
+      }
     }
-  }
 
     async function updateWNHN() {
-    try {
-      const html = await fetchWithProxy("https://www.wnhnfm.org/now-playing-on-wnhn/");
-      const match = html.match(/Now Playing.*?<strong>(.*?)<\/strong>/i);
-      const text = match ? match[1].trim() : 'Not found';
-      document.querySelector('#wnhn .info').innerText = text;
-    } catch (e) {
-      document.querySelector('#wnhn .info').innerText = 'Failed to load.';
+      try {
+        const html = await fetchWithProxy("https://www.wnhnfm.org/now-playing-on-wnhn/");
+        const nowMatch = html.match(/<font.*?color.*?>\\s*([^<]+)<\\/font>.*?Coming Up Next/i);
+        const nextMatch = html.match(/Coming Up Next.*?<font.*?color.*?>\\s*([^<]+)<\\/font>/i);
+        const now = nowMatch ? nowMatch[1].trim() : 'Not found';
+        const next = nextMatch ? nextMatch[1].trim() : 'Unknown';
+        document.querySelector('#wnhn .info').innerText = `Now: ${now}\nNext: ${next}`;
+      } catch {
+        document.querySelector('#wnhn .info').innerText = 'Failed to load.';
+      }
     }
-  }
 
-    // Start updates on page load
+    // Kick off all updates
     updateWRBB();
     updateWJIB();
     updateWNHN();
