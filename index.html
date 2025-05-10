@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="icon" href="data:,">
   <title>Now Playing - Radio Tracker</title>
   <style>
     body { background: #111; color: #eee; font-family: sans-serif; padding: 20px; }
     .station { margin-bottom: 25px; padding: 10px; background: #222; border-radius: 8px; }
     .station h2 { color: #0f0; margin-bottom: 5px; }
   </style>
+  <link rel="icon" href="data:,"> <!-- Avoid favicon error -->
 </head>
 <body>
   <h1>Now Playing</h1>
@@ -20,16 +20,16 @@
 
   <script>
     async function fetchWithProxy(url) {
-      const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + url;
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
       const response = await fetch(proxyUrl);
-      const data = await response.text();
-      return data;
+      const data = await response.json();
+      return data.contents;
     }
 
     async function updateWRBB() {
       try {
         const html = await fetchWithProxy("https://spinitron.com/WRBB/");
-        const match = html.match(/<td class="song">(.*?)<\/td>\\s*<td class="artist">(.*?)<\/td>/);
+        const match = html.match(/<td class="song">(.*?)<\/td>\s*<td class="artist">(.*?)<\/td>/);
         const text = match ? `${match[2]} – ${match[1]}` : 'Not found';
         document.querySelector('#wrbb .info').innerText = text;
       } catch (e) {
@@ -59,6 +59,7 @@
       }
     }
 
+    // Start updates on page load
     updateWRBB();
     updateWJIB();
     updateWNHN();
